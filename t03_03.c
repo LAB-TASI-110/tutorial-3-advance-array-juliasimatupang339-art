@@ -1,83 +1,81 @@
-#include <stdio.h> // Diperlukan untuk fungsi input/output seperti printf dan scanf
-#include <limits.h> // Diperlukan untuk INT_MAX dan INT_MIN (opsional, untuk inisialisasi min/max)
+#include <stdio.h>  // Diperlukan untuk fungsi input/output seperti scanf dan printf
+#include <stdlib.h> // Diperlukan untuk fungsi malloc dan free
+#include <limits.h> // Diperlukan untuk INT_MAX dan INT_MIN (untuk inisialisasi min/max)
 
 int main() {
-    int n; // Variabel untuk menyimpan jumlah bilangan yang akan dimasukkan (jumlah mahasiswa)
-    
-    // Membaca nilai n dari input pengguna (baris pertama)
-    // printf("Masukkan jumlah mahasiswa (n): "); // Prompt opsional
+    int n;          // Variabel untuk menyimpan jumlah baris masukkan n
+    double sum = 0.0; // Variabel untuk menyimpan jumlah total nilai, menggunakan double agar presisi
+    int i;          // Variabel untuk loop
+
+    // Inisialisasi untuk menemukan nilai minimum dan maksimum
+    // Diasumsikan nilai tugas antara 0-100, jadi kita bisa pakai batas yang lebih spesifik
+    int min_score = 101; // Nilai maksimum yang mungkin adalah 100, jadi 101 adalah batas atas yang aman
+    int max_score = -1;  // Nilai minimum yang mungkin adalah 0, jadi -1 adalah batas bawah yang aman
+
+    // Membaca input n (jumlah nilai tugas)
+    // Diasumsikan n adalah bilangan bulat positif sesuai instruksi ("bilangan bulat positif")
     scanf("%d", &n);
 
-    // Deklarasi Variable Length Array (VLA) untuk menyimpan nilai-nilai mahasiswa
-    // VLA didukung oleh GCC di bawah standar C99/C11.
-    int scores[n]; 
-    int sum = 0;    // Variabel untuk mengakumulasikan total jumlah nilai, diinisialisasi dengan 0
-    double average; // Variabel untuk menyimpan hasil rata-rata, menggunakan double untuk presisi
-    int count_above_average = 0; // Variabel untuk menghitung mahasiswa dengan nilai >= rata-rata
-    
-    // Inisialisasi min_score dan max_score dengan nilai ekstrim atau nilai pertama
-    // Menginisialisasi dengan INT_MAX dan INT_MIN dari <limits.h> adalah cara robust.
-    // Atau, bisa inisialisasi dengan scores[0] setelah membaca nilai pertama.
-    int min_score = INT_MAX; // Nilai terbesar yang mungkin untuk int
-    int max_score = INT_MIN; // Nilai terkecil yang mungkin untuk int
+    // Alokasi memori untuk menyimpan nilai-nilai tugas
+    // Menggunakan malloc agar ukuran array bisa dinamis sesuai input n
+    int *scores = (int *)malloc(n * sizeof(int));
+    if (scores == NULL) {
+        printf("Error: Gagal mengalokasikan memori.\n");
+        return 1; // Mengindikasikan program berakhir dengan kesalahan
+    }
 
-    // --- Iterasi Pertama: Membaca nilai-nilai ke dalam array, menghitung jumlah total, dan menentukan min/max ---
-    // printf("Masukkan %d nilai mahasiswa:\n", n); // Prompt opsional
-    for (int i = 0; i < n; i++) {
-        // Membaca nilai mahasiswa saat ini dan menyimpannya ke dalam array
-        scanf("%d", &scores[i]);
-        
-        // Menambahkan nilai saat ini ke total jumlah
-        sum += scores[i]; 
+    // Membaca n baris nilai tugas, menyimpannya dalam array, dan menghitung jumlahnya
+    // Sesuai dengan batasan "bilangan bulat antara 0 - 100" dan "tidak menerima inputan dibawah 0",
+    // kita asumsikan semua input n baris nilai akan berada dalam rentang [0, 100].
+    for (i = 0; i < n; i++) {
+        scanf("%d", &scores[i]); // Baca nilai langsung ke dalam array
 
-        // Memperbarui nilai minimum
+        sum += scores[i];      // Tambahkan ke jumlah total
+
+        // Update nilai minimum dan maksimum
         if (scores[i] < min_score) {
             min_score = scores[i];
         }
-
-        // Memperbarui nilai maksimum
         if (scores[i] > max_score) {
             max_score = scores[i];
         }
     }
 
-    // Menghitung rata-rata
-    // Melakukan type casting eksplisit pada 'sum' ke 'double' sebelum pembagian
-    if (n > 0) { // Menghindari pembagian dengan nol jika n adalah 0
-        average = (double)sum / n;
+    // 1. Menampilkan jumlah seluruh nilai
+    printf("%.0f\n", sum); // Menggunakan .0f untuk menampilkan double tanpa desimal
+
+    double average = 0.0;
+    if (n > 0) { // Pastikan n tidak nol untuk menghindari pembagian dengan nol
+        average = sum / n;
+        // 2. Menampilkan rata-rata dengan 2 digit presisi
+        printf("%.2f\n", average);
     } else {
-        average = 0.0; // Jika tidak ada nilai, rata-rata adalah 0
-        min_score = 0; // Atur min/max/range ke 0 jika tidak ada data
-        max_score = 0;
+        printf("0.00\n"); // Jika n=0, rata-rata adalah 0.00
     }
 
-    // --- Iterasi Kedua: Membandingkan setiap nilai dalam array dengan rata-rata ---
-    for (int i = 0; i < n; i++) {
-        if (scores[i] >= average) {
-            count_above_average++; // Menambah hitungan jika nilai memenuhi kriteria
+    // 3. Menghitung banyaknya mahasiswa yang nilainya di atas atau sama dengan rata-rata
+    int count_above_average = 0;
+    if (n > 0) { // Hanya jika ada mahasiswa untuk diperiksa
+        for (i = 0; i < n; i++) {
+            if (scores[i] >= average) {
+                count_above_average++;
+            }
         }
     }
+    printf("%d\n", count_above_average); // Menampilkan jumlah mahasiswa di atas/sama dengan rata-rata
 
-    // Menghitung rentang nilai (Range)
-    int range = max_score - min_score;
-    // Jika n=0, min_score dan max_score akan tetap INT_MAX/INT_MIN atau 0.
-    // Pastikan range juga 0 untuk kasus n=0.
-    if (n == 0) {
-        range = 0;
+    // 4. Menampilkan rentang nilai (maksimum - minimum)
+    if (n > 0) { // Hanya jika ada nilai untuk dihitung rentangnya
+        int range = max_score - min_score;
+        printf("%d\n", range);
+    } else {
+        // Jika n=0, rentang tidak terdefinisi atau bisa dianggap 0
+        printf("0\n"); // Atau penanganan lain sesuai kebutuhan (misal, tidak menampilkan apapun)
     }
 
-    // --- Menampilkan Output Sesuai Spesifikasi ---
-    // Baris 1: Jumlah total nilai
-    printf("%d\n", sum);
+    // Membebaskan memori yang telah dialokasikan
+    free(scores);
+    scores = NULL; // Hindari dangling pointer
 
-    // Baris 2: Nilai rata-rata (Float, presisi 2 desimal)
-    printf("%.2f\n", average);
-
-    // Baris 3: Jumlah mahasiswa dengan nilai >= rata-rata
-    printf("%d\n", count_above_average);
-
-    // Baris 4: Rentang nilai / Range
-    printf("%d\n", range);
-
-    return 0; // Mengindikasikan bahwa program berjalan dengan sukses
+    return 0; // Mengindikasikan program berjalan sukses
 }

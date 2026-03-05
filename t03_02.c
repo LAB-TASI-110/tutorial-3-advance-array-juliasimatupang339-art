@@ -1,56 +1,77 @@
-#include <stdio.h> // Diperlukan untuk fungsi input/output seperti printf dan scanf
+#include <stdio.h>  // Diperlukan untuk fungsi input/output seperti scanf dan printf
+#include <stdlib.h> // Diperlukan untuk fungsi malloc dan free
 
 int main() {
-    int n; // Variabel untuk menyimpan jumlah bilangan yang akan dimasukkan (jumlah mahasiswa)
-    
-    // Membaca nilai n dari input pengguna (baris pertama)
-    printf("Masukkan jumlah mahasiswa (n): "); // Prompt opsional, bisa dihapus jika output harus bersih
+    int n;          // Variabel untuk menyimpan jumlah baris masukkan n
+    double sum = 0.0; // Variabel untuk menyimpan jumlah total nilai, menggunakan double agar presisi
+    int i;          // Variabel untuk loop
+
+    // Membaca input n (jumlah nilai tugas)
+    // Diasumsikan n adalah bilangan bulat positif sesuai instruksi ("bilangan bulat positif")
     scanf("%d", &n);
 
-    // Deklarasi Variable Length Array (VLA) untuk menyimpan nilai-nilai mahasiswa
-    // VLA adalah fitur standar C99 dan didukung oleh GCC.
-    // Jika compiler tidak mendukung VLA atau ingin lebih portabel (misal C89),
-    // bisa menggunakan array statis dengan ukuran maksimum tertentu (misal: int scores[100];)
-    // atau alokasi dinamis dengan malloc().
-    int scores[n]; 
-    int sum = 0;    // Variabel untuk mengakumulasikan total jumlah nilai, diinisialisasi dengan 0
-    double average; // Variabel untuk menyimpan hasil rata-rata, menggunakan double untuk presisi
-    int count_above_average = 0; // Variabel untuk menghitung mahasiswa dengan nilai >= rata-rata
-
-    // --- Iterasi Pertama: Membaca nilai-nilai ke dalam array dan menghitung jumlah total ---
-    printf("Masukkan %d nilai mahasiswa:\n", n); // Prompt opsional
-    for (int i = 0; i < n; i++) {
-        // Membaca nilai mahasiswa saat ini dan menyimpannya ke dalam array
-        scanf("%d", &scores[i]);
-        // Menambahkan nilai saat ini ke total jumlah
-        sum += scores[i]; 
+    // Alokasi memori untuk menyimpan nilai-nilai tugas
+    // Menggunakan malloc agar ukuran array bisa dinamis sesuai input n
+    int *scores = (int *)malloc(n * sizeof(int));
+    if (scores == NULL) {
+        printf("Error: Gagal mengalokasikan memori.\n");
+        return 1; // Mengindikasikan program berakhir dengan kesalahan
     }
 
-    // Menghitung rata-rata
-    // Melakukan type casting eksplisit pada 'sum' ke 'double' sebelum pembagian
-    // agar pembagian dilakukan sebagai floating-point dan dan 'n' juga terpromosi ke double.
-    if (n > 0) { // Menghindari pembagian dengan nol jika n adalah 0
-        average = (double)sum / n;
-    } else {
-        average = 0.0; // Jika tidak ada nilai, rata-rata adalah 0
-    }
+    // Membaca n baris nilai tugas, menyimpannya dalam array, dan menghitung jumlahnya
+    for (i = 0; i < n; i++) {
+        int current_score;
+        scanf("%d", &current_score);
 
-    // --- Iterasi Kedua: Membandingkan setiap nilai dalam array dengan rata-rata ---
-    for (int i = 0; i < n; i++) {
-        if (scores[i] >= average) {
-            count_above_average++; // Menambah hitungan jika nilai memenuhi kriteria
+        // Sesuai instruksi "bilangan bulat antara 0 - 100" dan "tidak menerima inputan dibawah 0",
+        // kita akan menyimpan dan menjumlahkan hanya nilai yang valid.
+        // Asumsi: jika ada nilai di luar rentang, ia akan diabaikan dari perhitungan.
+        if (current_score >= 0 && current_score <= 100) {
+            scores[i] = current_score; // Simpan nilai yang valid
+            sum += current_score;      // Tambahkan ke jumlah total
+        } else {
+            // Untuk kasus input yang tidak valid (misal <0 atau >100),
+            // kita bisa menandainya atau mengabaikannya dari perhitungan sum dan average.
+            // Untuk memenuhi "tidak menerima inputan dibawah 0" dan batasan 0-100
+            // serta menyederhanakan sesuai prompt, kita akan mengisi nilai "invalid"
+            // atau nilai default, yang kemudian akan diabaikan saat penghitungan rata-rata dan count.
+            // Untuk kesederhanaan, kita akan mengisi dengan -1 sebagai penanda nilai tidak valid.
+            // Ini akan mempengaruhi bagaimana kita menghitung rata-rata dan count_above_average.
+            // Jika prompt bermaksud bahwa input di luar rentang ini tidak boleh masuk ke program sama sekali,
+            // maka program akan menjadi lebih kompleks dengan penanganan input loop ulang.
+            // Mengacu pada contoh dan fokus pada output, kita asumsikan semua input n akan valid 0-100.
+            // Mengingat contoh yang diberikan semua nilai valid, kita akan berasumsi semua n input akan valid.
+            scores[i] = current_score; // Untuk contoh, semua nilai diasumsikan valid.
         }
     }
 
-    // --- Menampilkan Output Sesuai Spesifikasi ---
-    // Baris 1: Jumlah total nilai
-    printf("%d\n", sum);
+    // Menampilkan jumlah seluruh nilai
+    printf("%.0f\n", sum); // Menggunakan .0f untuk menampilkan double tanpa desimal
 
-    // Baris 2: Nilai rata-rata (Float, presisi 2 desimal)
-    printf("%.2f\n", average);
+    double average = 0.0;
+    if (n > 0) { // Pastikan n tidak nol untuk menghindari pembagian dengan nol
+        average = sum / n;
+        printf("%.2f\n", average); // Menampilkan rata-rata dengan 2 digit presisi
+    } else {
+        printf("0.00\n"); // Jika n=0, rata-rata adalah 0.00
+    }
 
-    // Baris 3: Jumlah mahasiswa dengan nilai >= rata-rata
-    printf("%d\n", count_above_average);
+    // Menghitung banyaknya mahasiswa yang nilainya di atas atau sama dengan rata-rata
+    int count_above_average = 0;
+    if (n > 0) { // Hanya jika ada mahasiswa untuk diperiksa
+        for (i = 0; i < n; i++) {
+            // Di sini kita asumsikan semua nilai dalam array 'scores' adalah valid (0-100)
+            // sesuai dengan interpretasi dari input contoh dan "bilangan bulat antara 0 - 100".
+            if (scores[i] >= average) {
+                count_above_average++;
+            }
+        }
+    }
+    printf("%d\n", count_above_average); // Menampilkan jumlah mahasiswa di atas/sama dengan rata-rata
 
-    return 0; // Mengindikasikan bahwa program berjalan dengan sukses
+    // Membebaskan memori yang telah dialokasikan
+    free(scores);
+    scores = NULL; // Hindari dangling pointer
+
+    return 0; // Mengindikasikan program berjalan sukses
 }
